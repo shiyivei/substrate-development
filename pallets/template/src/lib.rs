@@ -25,7 +25,7 @@ pub mod pallet {
 		//trait 的父为 frame_system::Config,表示继承
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		/// Event是trait内新定义的关联项（类型），然后它实现了From trait，它又实现了Event + IsType trait
-		/// 管理类型在实现方法时再具体指定
+		/// 关联类型在实现方法时再具体指定
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		//1.先定义系统层面的trait（Config）
