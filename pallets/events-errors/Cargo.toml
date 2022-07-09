@@ -1,7 +1,7 @@
 [package]
-name = "pallet-use-storage"
+name = "pallet-events-errors"
 version = "0.0.1"
-description = "example for storage"
+description = "example for events and errors"
 authors = ["shiyivei"]
 homepage = "https://substrate.io/"
 edition = "2021"

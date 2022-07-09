@@ -18,7 +18,7 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		//步骤一：定义关联类型及其trait约束
-		//type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 	}
 
 	//4.存储，定义变量存放地方
@@ -46,12 +46,14 @@ pub mod pallet {
 	>; //第三种存储类型，Double Map,k1,k2,v；//Blake2_128Concat为k的哈希
 
 	//5.链上事件的通知
-	// #[pallet::event]
-	// #[pallet::generate_deposit(pub(super) fn deposit_event)]
-	//步骤三：操作执行成功后通知用户
-	// pub enum Event<T: Config> {
-	// 	//ClaimCreated(u32, u128), //元组
-	// }
+	#[pallet::event]
+	#[pallet::generate_deposit(pub(super) fn deposit_event)] //生成发出事件的函数
+											  //步骤三：操作执行成功后通知用户
+	pub enum Event<T: Config> {
+		ClassSet(u32),              //班级
+		StudentInfoSet(u32, u128),  //学生信息
+		DormInfoSet(u32, u32, u32), //寝室信息
+	}
 
 	//6.钩子，如一些固定的动作
 	//#[pallet::hooks]
@@ -84,7 +86,9 @@ pub mod pallet {
 			ensure_root(origin)?; //只有root账户才能操作
 			Class::<T>::put(class); //StorageValue 使用put方法存储值，其他方法可以去官方文档查看
 
-			//省略了通知
+			// let _c = Self::my_class(); //调用getter函数
+			//发出事件通知
+			Self::deposit_event(Event::ClassSet(class));
 
 			Ok(().into()) //把错误装箱
 		}
@@ -99,6 +103,9 @@ pub mod pallet {
 
 			StudentInfo::<T>::insert(&student_number, &student_name);
 
+			//发出事件通知
+			Self::deposit_event(Event::StudentInfoSet(student_number, student_name));
+
 			Ok(().into())
 		}
 		#[pallet::weight(0)]
@@ -111,6 +118,9 @@ pub mod pallet {
 			ensure_root(origin)?;
 
 			DormInfo::<T>::insert(&dorm_number, &bed_number, &student_number);
+
+			//发出事件通知
+			Self::deposit_event(Event::DormInfoSet(dorm_number, bed_number, student_number));
 
 			Ok(().into())
 		}

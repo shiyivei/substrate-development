@@ -278,6 +278,11 @@ impl pallet_use_storage::Config for Runtime {
 	// type Event = Event;
 }
 
+//实现pallet
+impl pallet_events_errors::Config for Runtime {
+	type Event = Event;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -297,6 +302,7 @@ construct_runtime!(
 		TemplateModule: pallet_template,
 		SimplePallet:pallet_simple_pallet,
 		UseStorage:pallet_use_storage,
+		EventsErrors:pallet_events_errors,
 	}
 );
 
