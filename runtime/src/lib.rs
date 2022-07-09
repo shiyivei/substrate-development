@@ -296,6 +296,8 @@ impl pallet_use_hooks::Config for Runtime {
 //实现pallet
 impl pallet_use_config::Config for Runtime {
 	type Event = Event;
+	type StudentNumberType = u32;
+	type StudentNameType = u128;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

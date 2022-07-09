@@ -6,7 +6,11 @@ pub use pallet::*; //导出，外部可以调用
 pub mod pallet {
 
 	//1.引入外部依赖，可以引入其它的依赖
+	use super::*;
+	use frame_support::dispatch::fmt::Debug;
+	use frame_support::dispatch::Codec;
 	use frame_support::pallet_prelude::*;
+	use frame_support::sp_runtime::traits::AtLeast32BitUnsigned;
 	use frame_support::transactional;
 	use frame_system::pallet_prelude::*;
 
@@ -21,6 +25,29 @@ pub mod pallet {
 		//步骤一：定义关联类型及其trait约束
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		//type StudentNumber:Get<u32>
+
+		//定义类型，并指定约束
+		type StudentNumberType: Parameter
+			+ Member
+			+ AtLeast32BitUnsigned
+			+ Codec
+			+ Copy
+			+ Debug
+			+ Default
+			+ MaxEncodedLen
+			+ MaybeSerializeDeserialize;
+
+		type StudentNameType: Parameter
+			+ Member
+			+ AtLeast32BitUnsigned
+			+ Codec
+			+ Copy
+			+ Default
+			+ From<u128>
+			+ Into<u128>
+			+ MaxEncodedLen
+			+ MaybeSerializeDeserialize
+			+ Debug;
 	}
 
 	//4.存储，定义变量存放地方
@@ -38,7 +65,8 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn student_info)] //ValueQuery:默认返回
-	pub type StudentInfo<T: Config> = StorageMap<_, Blake2_128Concat, u32, u128, ValueQuery>;
+	pub type StudentInfo<T: Config> =
+		StorageMap<_, Blake2_128Concat, T::StudentNumberType, T::StudentNameType, ValueQuery>;
 	//第二种存储类型，Map，k:StudentNumber,v:StudentName
 
 	// #[pallet::storage]
@@ -59,9 +87,9 @@ pub mod pallet {
 											  //步骤三：操作执行成功后通知用户
 	pub enum Event<T: Config> {
 		//ClassSet(u32), //班级
-		StudentInfoSet(u32, u128), //学生信息
-		                           //DormInfoSet(u32, u32, u32), //寝室信息
-		                           //SetParam(u32),
+		StudentInfoSet(T::StudentNumberType, T::StudentNameType), //学生信息
+		                                                          //DormInfoSet(u32, u32, u32), //寝室信息
+		                                                          //SetParam(u32),
 	}
 
 	//6.错误
@@ -170,8 +198,8 @@ pub mod pallet {
 		#[pallet::weight(0)]
 		pub fn set_student_info(
 			origin: OriginFor<T>,
-			student_number: u32,
-			student_name: u128,
+			student_number: T::StudentNumberType,
+			student_name: T::StudentNameType,
 		) -> DispatchResultWithPostInfo {
 			ensure_root(origin)?;
 
