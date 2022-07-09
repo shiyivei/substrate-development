@@ -24,13 +24,14 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		//trait 的父为 frame_system::Config,表示继承
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		/// Event是trait内新定义的关联项（类型），然后它实现了From trait，它又实现了Event + IsType trait
-		/// 关联类型在实现方法时再具体指定
+		/// Event是trait内新定义的关联项（类型），然后它实现了From trait，它又实现了Event + IsType
+		/// trait 关联类型在实现方法时再具体指定
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		//1.先定义系统层面的trait（Config）
 		//2.然后在trait内定义关联类型并指定其实现特定trait
-		//3.为pallet实现方法，此时pallet是泛型，当然要实现Config，如果trait中没有指明方法，实现的时候可以实现多个
+		//3.为pallet实现方法，此时pallet是泛型，当然要实现Config，如果trait中没有指明方法，
+		// 实现的时候可以实现多个
 	}
 
 	#[pallet::pallet]

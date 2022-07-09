@@ -30,9 +30,7 @@ pub use frame_support::{
 		ConstU128, ConstU32, ConstU64, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo,
 	},
 	weights::{
-		constants::{
-			BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND,
-		},
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		IdentityFee, Weight,
 	},
 	StorageValue,
@@ -288,6 +286,11 @@ impl pallet_call_function::Config for Runtime {
 	type Event = Event;
 }
 
+//实现pallet
+impl pallet_use_hooks::Config for Runtime {
+	type Event = Event;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -304,11 +307,12 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-template in the runtime.
-		TemplateModule: pallet_template,
+		TemplateModule:pallet_template,
 		SimplePallet:pallet_simple_pallet,
 		UseStorage:pallet_use_storage,
 		EventsErrors:pallet_events_errors,
 		CallFunction:pallet_call_function,
+		UseHooks:pallet_use_hooks,
 	}
 );
 

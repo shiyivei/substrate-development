@@ -25,7 +25,8 @@ pub mod pallet {
 	#[pallet::storage]
 	//定义链上存储，有点同开辟存储空间
 	//步骤二：定义存储，有四种：Storage Value、 Storage Map、Storage Double Map、Storage N Map
-	//pub type Proofs<T: Config> = StorageMap<_, Blake2_128Concat, u32, u128>; //前面两项是默认，后面两项是k,v
+	//pub type Proofs<T: Config> = StorageMap<_, Blake2_128Concat, u32, u128>;
+	// //前面两项是默认，后面两项是k,v
 	#[pallet::getter(fn my_class)] //getter函数，与字段同名，只返回字段中的值，可以把字段变为私有，然后通过api访问
 	pub type Class<T: Config> = StorageValue<_, u32>; //存储名：Class，存储类型：StorageValue，只存一个值（任何类型），默认要实现约束Config
 
@@ -48,7 +49,7 @@ pub mod pallet {
 	//5.链上事件的通知
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)] //生成发出事件的函数
-											  //步骤三：操作执行成功后通知用户
+														 //步骤三：操作执行成功后通知用户
 	pub enum Event<T: Config> {
 		ClassSet(u32),              //班级
 		StudentInfoSet(u32, u128),  //学生信息
@@ -81,13 +82,13 @@ pub mod pallet {
 		// }
 		//每一个存储变量对应一个调度函数
 		#[pallet::weight(0)] //所有调度函数都需要，操作成本
-				 //函数名称与存储名称在语义上保持统一，函数是对存储的操作，函数的结果使用Result枚举处理
+					 //函数名称与存储名称在语义上保持统一，函数是对存储的操作，函数的结果使用Result枚举处理
 		pub fn set_class_info(origin: OriginFor<T>, class: u32) -> DispatchResultWithPostInfo {
 			ensure_root(origin)?; //只有root账户才能操作
 
 			//先判断
 			if Class::<T>::exists() {
-				return Err(Error::<T>::ClassSetDuplicate.into());
+				return Err(Error::<T>::ClassSetDuplicate.into())
 			}
 			Class::<T>::put(class); //StorageValue 使用put方法存储值，其他方法可以去官方文档查看
 
@@ -108,7 +109,7 @@ pub mod pallet {
 
 			//先判断
 			if StudentInfo::<T>::contains_key(student_number) {
-				return Err(Error::<T>::StudentInfoSetDuplicate.into());
+				return Err(Error::<T>::StudentInfoSetDuplicate.into())
 			}
 
 			StudentInfo::<T>::insert(&student_number, &student_name);
@@ -129,7 +130,7 @@ pub mod pallet {
 
 			//先判断
 			if DormInfo::<T>::contains_key(dorm_number, bed_number) {
-				return Err(Error::<T>::DormInfoSetDuplicate.into());
+				return Err(Error::<T>::DormInfoSetDuplicate.into())
 			}
 
 			DormInfo::<T>::insert(&dorm_number, &bed_number, &student_number);

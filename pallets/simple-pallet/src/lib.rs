@@ -23,7 +23,7 @@ pub mod pallet {
 
 	//4.存储，定义变量存放地方
 	#[pallet::storage] //定义链上存储，有点同开辟存储空间
-			    //步骤二：定义存储，有四种：Storage Value、 Storage Map、Storage Double Map、Storage N Map
+				   //步骤二：定义存储，有四种：Storage Value、 Storage Map、Storage Double Map、Storage N Map
 	pub type Proofs<T: Config> = StorageMap<_, Blake2_128Concat, u32, u128>; //前面两项是默认，后面两项是k,v
 
 	//5.链上事件的通知

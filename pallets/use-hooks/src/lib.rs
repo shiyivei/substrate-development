@@ -6,7 +6,8 @@ pub use pallet::*; //导出，外部可以调用
 pub mod pallet {
 
 	//1.引入外部依赖，可以引入其它的依赖
-	use frame_support::{pallet_prelude::*, transactional};
+	use frame_support::pallet_prelude::*;
+	use frame_support::transactional;
 	use frame_system::pallet_prelude::*;
 
 	//2.声明pallet,可以理解为对象占位符号，固定写法
@@ -55,16 +56,42 @@ pub mod pallet {
 	//5.链上事件的通知
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)] //生成发出事件的函数
-														 //步骤三：操作执行成功后通知用户
+											  //步骤三：操作执行成功后通知用户
 	pub enum Event<T: Config> {
-		ClassSet(u32), /*班级
-		                *StudentInfoSet(u32, u128),  //学生信息
-		                *DormInfoSet(u32, u32, u32), //寝室信息 */
+		ClassSet(u32), //班级
+		//StudentInfoSet(u32, u128),  //学生信息
+		//DormInfoSet(u32, u32, u32), //寝室信息
+		SetParam(u32),
 	}
 
+	//7.错误
+	//步骤五：处理错误
+	//和event类似，但error是当调度函数发生错误时发出的事件
+	#[pallet::error]
+	pub enum Error<T> {
+		// ClassSetDuplicate,
+		NumberTooSmallThan100,
+		// StudentInfoSetDuplicate,
+		// DormInfoSetDuplicate,
+		FlagExisted,
+	}
+	//错误定义和Event类似
+	//步骤六：使用钩子
+	//例如在某两个步骤之间打印日志
+	//fn offchain_worker(_n,BlockNumber) {...}
+
 	//6.钩子，如一些固定的动作
-	//#[pallet::hooks]
-	//impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> { ... }
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		//实现两个函数
+		fn on_finalize(n: BlockNumberFor<T>) {
+			log::info!(target: "use-hooks","------- on_finalize,block number is {:?}",n);
+		}
+		fn on_initialize(n: BlockNumberFor<T>) -> Weight {
+			log::info!(target: "use-hooks","+++++++ on_initialize,block number is {:?}",n);
+			0
+		}
+	}
 
 	//7.调度函数,类似于合约函数，pallet整个流程可以类比为一个智能合约，而合约的调用最终要在链上执行
 	#[pallet::call]
@@ -90,7 +117,7 @@ pub mod pallet {
 		#[transactional] //自动回滚
 		//每一个存储变量对应一个调度函数
 		#[pallet::weight(0)] //所有调度函数都需要，操作成本，权重可以动态变化根据条件
-					 //函数名称与存储名称在语义上保持统一，函数是对存储的操作，函数的结果使用Result枚举处理
+				 //函数名称与存储名称在语义上保持统一，函数是对存储的操作，函数的结果使用Result枚举处理
 		pub fn set_class_info(origin: OriginFor<T>, class: u32) -> DispatchResultWithPostInfo {
 			//1.判断条件: 签名、是否是root账户
 			ensure_root(origin)?; //只有root账户才能操作
@@ -105,7 +132,7 @@ pub mod pallet {
 			Class::<T>::put(class); //StorageValue 使用put方法存储值，其他方法可以去官方文档查看
 
 			if HasSetFlag::<T>::exists() {
-				return Err(Error::<T>::FlagExisted.into())
+				return Err(Error::<T>::FlagExisted.into());
 			}
 
 			HasSetFlag::<T>::put(Some(true));
@@ -120,6 +147,24 @@ pub mod pallet {
 			Self::deposit_event(Event::ClassSet(class));
 
 			Ok(().into()) //把错误装箱
+		}
+
+		// #[transactional]
+		#[pallet::weight(0)]
+		pub fn set_param_bigger_than_100(origin: OriginFor<T>, param: u32) -> DispatchResult {
+			ensure_root(origin)?;
+
+			if param <= 100 {
+				return Err(Error::<T>::NumberTooSmallThan100.into());
+			}
+
+			Class::<T>::put(param);
+			//3、发出事件
+			Self::deposit_event(Event::SetParam(param));
+			//添加log
+			log::info!(target: "use-hooks", "set param bigger than 100");
+
+			Ok(().into())
 		}
 
 		// #[pallet::weight(0)]
@@ -164,19 +209,4 @@ pub mod pallet {
 		// 	Ok(().into())
 		// }
 	}
-
-	//步骤五：处理错误
-	//和event类似，但error是当调度函数发生错误时发出的事件
-	#[pallet::error]
-	pub enum Error<T> {
-		// ClassSetDuplicate,
-		// NumberTooSmallThan100,
-		// StudentInfoSetDuplicate,
-		// DormInfoSetDuplicate,
-		FlagExisted,
-	}
-	//错误定义和Event类似
-	//步骤六：使用钩子
-	//例如在某两个步骤之间打印日志
-	//fn offchain_worker(_n,BlockNumber) {...}
 }
