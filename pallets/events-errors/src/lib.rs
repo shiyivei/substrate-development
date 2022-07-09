@@ -84,6 +84,11 @@ pub mod pallet {
 				 //函数名称与存储名称在语义上保持统一，函数是对存储的操作，函数的结果使用Result枚举处理
 		pub fn set_class_info(origin: OriginFor<T>, class: u32) -> DispatchResultWithPostInfo {
 			ensure_root(origin)?; //只有root账户才能操作
+
+			//先判断
+			if Class::<T>::exists() {
+				return Err(Error::<T>::ClassSetDuplicate.into());
+			}
 			Class::<T>::put(class); //StorageValue 使用put方法存储值，其他方法可以去官方文档查看
 
 			// let _c = Self::my_class(); //调用getter函数
@@ -101,6 +106,11 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			ensure_root(origin)?;
 
+			//先判断
+			if StudentInfo::<T>::contains_key(student_number) {
+				return Err(Error::<T>::StudentInfoSetDuplicate.into());
+			}
+
 			StudentInfo::<T>::insert(&student_number, &student_name);
 
 			//发出事件通知
@@ -117,6 +127,11 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			ensure_root(origin)?;
 
+			//先判断
+			if DormInfo::<T>::contains_key(dorm_number, bed_number) {
+				return Err(Error::<T>::DormInfoSetDuplicate.into());
+			}
+
 			DormInfo::<T>::insert(&dorm_number, &bed_number, &student_number);
 
 			//发出事件通知
@@ -127,6 +142,13 @@ pub mod pallet {
 	}
 
 	//步骤五：处理错误
+	//和event类似，但error是当调度函数发生错误时发出的事件
+	#[pallet::error]
+	pub enum Error<T> {
+		ClassSetDuplicate,
+		StudentInfoSetDuplicate,
+		DormInfoSetDuplicate,
+	}
 	//错误定义和Event类似
 	//步骤六：使用钩子
 	//例如在某两个步骤之间打印日志
