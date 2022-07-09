@@ -7,6 +7,7 @@ pub mod pallet {
 
 	//1.引入外部依赖，可以引入其它的依赖
 	use frame_support::pallet_prelude::*;
+	use frame_support::transactional;
 	use frame_system::pallet_prelude::*;
 
 	//2.声明pallet,可以理解为对象占位符号，固定写法
@@ -31,29 +32,33 @@ pub mod pallet {
 	pub type Class<T: Config> = StorageValue<_, u32>; //存储名：Class，存储类型：StorageValue，只存一个值（任何类型），默认要实现约束Config
 
 	#[pallet::storage]
-	#[pallet::getter(fn student_info)] //ValueQuery:默认返回
-	pub type StudentInfo<T: Config> = StorageMap<_, Blake2_128Concat, u32, u128, ValueQuery>; //第二种存储类型，Map，k:StudentNumber,v:StudentName
+	#[pallet::getter(fn set_flag)]
+	pub type HasSetFlag<T: Config> = StorageValue<_, Option<bool>>;
 
-	#[pallet::storage]
-	#[pallet::getter(fn dorm_info)]
-	pub type DormInfo<T: Config> = StorageDoubleMap<
-		_,
-		Blake2_128Concat,
-		u32, //dorm number
-		Blake2_128Concat,
-		u32, //bed number
-		u32, //student number
-		ValueQuery,
-	>; //第三种存储类型，Double Map,k1,k2,v；//Blake2_128Concat为k的哈希
+	// #[pallet::storage]
+	// #[pallet::getter(fn student_info)] //ValueQuery:默认返回
+	// pub type StudentInfo<T: Config> = StorageMap<_, Blake2_128Concat, u32, u128, ValueQuery>; //第二种存储类型，Map，k:StudentNumber,v:StudentName
+
+	// #[pallet::storage]
+	// #[pallet::getter(fn dorm_info)]
+	// pub type DormInfo<T: Config> = StorageDoubleMap<
+	// 	_,
+	// 	Blake2_128Concat,
+	// 	u32, //dorm number
+	// 	Blake2_128Concat,
+	// 	u32, //bed number
+	// 	u32, //student number
+	// 	ValueQuery,
+	// >; //第三种存储类型，Double Map,k1,k2,v；//Blake2_128Concat为k的哈希
 
 	//5.链上事件的通知
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)] //生成发出事件的函数
 											  //步骤三：操作执行成功后通知用户
 	pub enum Event<T: Config> {
-		ClassSet(u32),              //班级
-		StudentInfoSet(u32, u128),  //学生信息
-		DormInfoSet(u32, u32, u32), //寝室信息
+		ClassSet(u32), //班级
+		               //StudentInfoSet(u32, u128),  //学生信息
+		               //DormInfoSet(u32, u32, u32), //寝室信息
 	}
 
 	//6.钩子，如一些固定的动作
@@ -80,6 +85,8 @@ pub mod pallet {
 		// 	//4.返回单元组类型
 		// 	Ok(().into())
 		// }
+
+		#[transactional] //自动回滚
 		//每一个存储变量对应一个调度函数
 		#[pallet::weight(0)] //所有调度函数都需要，操作成本，权重可以动态变化根据条件
 				 //函数名称与存储名称在语义上保持统一，函数是对存储的操作，函数的结果使用Result枚举处理
@@ -87,13 +94,24 @@ pub mod pallet {
 			//1.判断条件: 签名、是否是root账户
 			ensure_root(origin)?; //只有root账户才能操作
 
-			//1.先判断
-			if Class::<T>::exists() {
-				return Err(Error::<T>::ClassSetDuplicate.into());
-			}
+			// //1.先判断
+			// if Class::<T>::exists() {
+			// 	return Err(Error::<T>::ClassSetDuplicate.into());
+			// }
 
 			//2.操作
+			//操作先于判断之前执行，但是由于用了transactional，所以判断失败后，状态会回滚
 			Class::<T>::put(class); //StorageValue 使用put方法存储值，其他方法可以去官方文档查看
+
+			if HasSetFlag::<T>::exists() {
+				return Err(Error::<T>::FlagExisted.into());
+			}
+
+			HasSetFlag::<T>::put(Some(true));
+
+			// if class <= 100u32 {
+			// 	return Err(Error::<T>::NumberTooSmallThan100.into());
+			// }
 
 			// let _c = Self::my_class(); //调用getter函数
 
@@ -103,56 +121,58 @@ pub mod pallet {
 			Ok(().into()) //把错误装箱
 		}
 
-		#[pallet::weight(0)]
-		pub fn set_student_info(
-			origin: OriginFor<T>,
-			student_number: u32,
-			student_name: u128,
-		) -> DispatchResultWithPostInfo {
-			ensure_root(origin)?;
+		// #[pallet::weight(0)]
+		// pub fn set_student_info(
+		// 	origin: OriginFor<T>,
+		// 	student_number: u32,
+		// 	student_name: u128,
+		// ) -> DispatchResultWithPostInfo {
+		// 	ensure_root(origin)?;
 
-			//先判断
-			if StudentInfo::<T>::contains_key(student_number) {
-				return Err(Error::<T>::StudentInfoSetDuplicate.into());
-			}
+		// 	//先判断
+		// 	if StudentInfo::<T>::contains_key(student_number) {
+		// 		return Err(Error::<T>::StudentInfoSetDuplicate.into());
+		// 	}
 
-			StudentInfo::<T>::insert(&student_number, &student_name);
+		// 	StudentInfo::<T>::insert(&student_number, &student_name);
 
-			//发出事件通知
-			Self::deposit_event(Event::StudentInfoSet(student_number, student_name));
+		// 	//发出事件通知
+		// 	Self::deposit_event(Event::StudentInfoSet(student_number, student_name));
 
-			Ok(().into())
-		}
-		#[pallet::weight(0)]
-		pub fn set_dorm_info(
-			origin: OriginFor<T>,
-			dorm_number: u32,
-			bed_number: u32,
-			student_number: u32,
-		) -> DispatchResultWithPostInfo {
-			ensure_root(origin)?;
+		// 	Ok(().into())
+		// }
+		// #[pallet::weight(0)]
+		// pub fn set_dorm_info(
+		// 	origin: OriginFor<T>,
+		// 	dorm_number: u32,
+		// 	bed_number: u32,
+		// 	student_number: u32,
+		// ) -> DispatchResultWithPostInfo {
+		// 	ensure_root(origin)?;
 
-			//先判断
-			if DormInfo::<T>::contains_key(dorm_number, bed_number) {
-				return Err(Error::<T>::DormInfoSetDuplicate.into());
-			}
+		// 	//先判断
+		// 	if DormInfo::<T>::contains_key(dorm_number, bed_number) {
+		// 		return Err(Error::<T>::DormInfoSetDuplicate.into());
+		// 	}
 
-			DormInfo::<T>::insert(&dorm_number, &bed_number, &student_number);
+		// 	DormInfo::<T>::insert(&dorm_number, &bed_number, &student_number);
 
-			//发出事件通知
-			Self::deposit_event(Event::DormInfoSet(dorm_number, bed_number, student_number));
+		// 	//发出事件通知
+		// 	Self::deposit_event(Event::DormInfoSet(dorm_number, bed_number, student_number));
 
-			Ok(().into())
-		}
+		// 	Ok(().into())
+		// }
 	}
 
 	//步骤五：处理错误
 	//和event类似，但error是当调度函数发生错误时发出的事件
 	#[pallet::error]
 	pub enum Error<T> {
-		ClassSetDuplicate,
-		StudentInfoSetDuplicate,
-		DormInfoSetDuplicate,
+		// ClassSetDuplicate,
+		// NumberTooSmallThan100,
+		// StudentInfoSetDuplicate,
+		// DormInfoSetDuplicate,
+		FlagExisted,
 	}
 	//错误定义和Event类似
 	//步骤六：使用钩子
