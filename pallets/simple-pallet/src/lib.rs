@@ -10,7 +10,7 @@ pub mod pallet {
 	use frame_system::pallet_prelude::*;
 
 	//2.声明pallet,可以理解为对象占位符号，固定写法
-	#[pallet::pallet]
+	#[pallet::pallet] //属性宏
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
 
@@ -22,8 +22,8 @@ pub mod pallet {
 	}
 
 	//4.存储，定义变量存放地方
-	#[pallet::storage]
-	//步骤二：定义存储，有四种：Storage Value、 Storage Map、Storage Double Map、Storage N Map
+	#[pallet::storage] //定义链上存储，有点同开辟存储空间
+			    //步骤二：定义存储，有四种：Storage Value、 Storage Map、Storage Double Map、Storage N Map
 	pub type Proofs<T: Config> = StorageMap<_, Blake2_128Concat, u32, u128>; //前面两项是默认，后面两项是k,v
 
 	//5.链上事件的通知
@@ -31,14 +31,14 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	//步骤三：操作执行成功后通知用户
 	pub enum Event<T: Config> {
-		ClaimCreated(u32, u128),
+		ClaimCreated(u32, u128), //元组
 	}
 
 	//6.钩子，如一些固定的动作
 	//#[pallet::hooks]
 	//impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> { ... }
 
-	//7.调度函数
+	//7.调度函数,类似于合约函数，pallet整个流程可以类比为一个智能合约，而合约的调用最终要在链上执行
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		//步骤四：编写调度函数
@@ -61,5 +61,8 @@ pub mod pallet {
 	}
 
 	//步骤五：处理错误
+	//错误定义和Event类似
 	//步骤六：使用钩子
+	//例如在某两个步骤之间打印日志
+	//fn offchain_worker(_n,BlockNumber) {...}
 }

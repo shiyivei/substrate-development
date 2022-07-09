@@ -268,9 +268,14 @@ impl pallet_template::Config for Runtime {
 	type Event = Event;
 }
 
-//配置
+//实现pallet
 impl pallet_simple_pallet::Config for Runtime {
 	type Event = Event;
+}
+
+//实现pallet
+impl pallet_use_storage::Config for Runtime {
+	// type Event = Event;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -291,6 +296,7 @@ construct_runtime!(
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template,
 		SimplePallet:pallet_simple_pallet,
+		UseStorage:pallet_use_storage,
 	}
 );
 
