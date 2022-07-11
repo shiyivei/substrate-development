@@ -2,17 +2,20 @@
 
 // 1. Imports and Dependencies
 pub use pallet::*; //导出，外部可以调用
+pub use traits::StorageInterface;
+
+pub mod traits; //引入
+
 #[frame_support::pallet]
 pub mod pallet {
 
 	//1.引入外部依赖，可以引入其它的依赖
 	use super::*;
-	use frame_support::{
-		dispatch::{fmt::Debug, Codec},
-		pallet_prelude::*,
-		sp_runtime::traits::AtLeast32BitUnsigned,
-		transactional,
-	};
+	use frame_support::dispatch::fmt::Debug;
+	use frame_support::dispatch::Codec;
+	use frame_support::pallet_prelude::*;
+	use frame_support::sp_runtime::traits::AtLeast32BitUnsigned;
+	// use frame_support::transactional;
 	use frame_system::pallet_prelude::*;
 
 	//2.声明pallet,可以理解为对象占位符号，固定写法
@@ -28,27 +31,39 @@ pub mod pallet {
 		//type StudentNumber:Get<u32>
 
 		//定义类型，并指定约束
-		type StudentNumberType: Parameter
-			+ Member
+		// type StudentNumberType: Parameter
+		// 	+ Member
+		// 	+ AtLeast32BitUnsigned
+		// 	+ Codec
+		// 	+ Copy
+		// 	+ Debug
+		// 	+ Default
+		// 	+ MaxEncodedLen
+		// 	+ MaybeSerializeDeserialize;
+
+		// type StudentNameType: Parameter
+		// 	+ Member
+		// 	+ AtLeast32BitUnsigned
+		// 	+ Codec
+		// 	+ Copy
+		// 	+ Default
+		// 	+ From<u128>
+		// 	+ Into<u128>
+		// 	+ MaxEncodedLen
+		// 	+ MaybeSerializeDeserialize
+		// 	+ Debug;
+
+		type Value: Member //定义关联类型
+			+ Parameter
 			+ AtLeast32BitUnsigned
 			+ Codec
+			+ From<u32>
+			+ Into<u32>
 			+ Copy
 			+ Debug
 			+ Default
 			+ MaxEncodedLen
 			+ MaybeSerializeDeserialize;
-
-		type StudentNameType: Parameter
-			+ Member
-			+ AtLeast32BitUnsigned
-			+ Codec
-			+ Copy
-			+ Default
-			+ From<u128>
-			+ Into<u128>
-			+ MaxEncodedLen
-			+ MaybeSerializeDeserialize
-			+ Debug;
 	}
 
 	//4.存储，定义变量存放地方
@@ -57,20 +72,17 @@ pub mod pallet {
 	//步骤二：定义存储，有四种：Storage Value、 Storage Map、Storage Double Map、Storage N Map
 	//pub type Proofs<T: Config> = StorageMap<_, Blake2_128Concat, u32, u128>;
 	// //前面两项是默认，后面两项是k,v
-	//#[pallet::getter(fn my_class)]
-	//#[pallet::getter(fn //getter函数，与字段同名，只返回字段中的值，可以把字段变为私有，
-	//#[pallet::getter(fn 然后通过api访问
-	//pub type Class<T: Config> = StorageValue<_, u32>;
-	// //存储名：Class，存储类型：StorageValue，只存一个值（任何类型），默认要实现约束Config
+	//#[pallet::getter(fn my_class)] //getter函数，与字段同名，只返回字段中的值，可以把字段变为私有，然后通过api访问
+	//pub type Class<T: Config> = StorageValue<_, u32>; //存储名：Class，存储类型：StorageValue，只存一个值（任何类型），默认要实现约束Config
 
 	//#[pallet::storage]
 	//#[pallet::getter(fn set_flag)]
 	//pub type HasSetFlag<T: Config> = StorageValue<_, Option<bool>>;
 
-	#[pallet::storage]
-	#[pallet::getter(fn student_info)] //ValueQuery:默认返回
-	pub type StudentInfo<T: Config> =
-		StorageMap<_, Blake2_128Concat, T::StudentNumberType, T::StudentNameType, ValueQuery>;
+	//#[pallet::storage]
+	//#[pallet::getter(fn student_info)] //ValueQuery:默认返回
+	// pub type StudentInfo<T: Config> =
+	// 	StorageMap<_, Blake2_128Concat, T::StudentNumberType, T::StudentNameType, ValueQuery>;
 	//第二种存储类型，Map，k:StudentNumber,v:StudentName
 
 	// #[pallet::storage]
@@ -85,16 +97,20 @@ pub mod pallet {
 	// 	ValueQuery,
 	// >; //第三种存储类型，Double Map,k1,k2,v；//Blake2_128Concat为k的哈希
 
+	#[pallet::storage]
+	#[pallet::getter(fn my_value)] //ValueQuery:默认返回，T::Value 代表当前pallet的Value
+	pub type MyValue<T: Config> = StorageValue<_, T::Value, ValueQuery>;
+
 	//5.链上事件的通知
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)] //生成发出事件的函数
-														 //步骤三：操作执行成功后通知用户
+											  //步骤三：操作执行成功后通知用户
 	pub enum Event<T: Config> {
 		//ClassSet(u32), //班级
-		StudentInfoSet(T::StudentNumberType, T::StudentNameType), /*学生信息
-		                                                           *DormInfoSet(u32, u32,
-		                                                           * u32), //寝室信息
-		                                                           * SetParam(u32), */
+		//StudentInfoSet(T::StudentNumberType, T::StudentNameType), //学生信息
+		//DormInfoSet(u32, u32, u32), //寝室信息
+		//SetParam(u32),
+		FunctionCallSuccess,
 	}
 
 	//6.错误
@@ -102,11 +118,12 @@ pub mod pallet {
 	//和event类似，但error是当调度函数发生错误时发出的事件
 	#[pallet::error]
 	pub enum Error<T> {
-		// ClassSetDuplicate,
+		//ClassSetDuplicate,
 		//NumberTooSmallThan100,
-		StudentInfoSetDuplicate,
-		// DormInfoSetDuplicate,
+		//StudentInfoSetDuplicate,
+		//DormInfoSetDuplicate,
 		//FlagExisted,
+		//FunctionCallFailed,
 	}
 	//错误定义和Event类似
 	//步骤六：使用钩子
@@ -114,17 +131,17 @@ pub mod pallet {
 	//fn offchain_worker(_n,BlockNumber) {...}
 
 	//7.钩子，如一些固定的动作
-	#[pallet::hooks]
-	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-		//实现两个函数
-		fn on_finalize(n: BlockNumberFor<T>) {
-			log::info!(target: "use-hooks","------- on_finalize,block number is {:?}",n);
-		}
-		fn on_initialize(n: BlockNumberFor<T>) -> Weight {
-			log::info!(target: "use-hooks","+++++++ on_initialize,block number is {:?}",n);
-			0
-		}
-	}
+	// #[pallet::hooks]
+	// impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+	// 	//实现两个函数
+	// 	fn on_finalize(n: BlockNumberFor<T>) {
+	// 		log::info!(target: "use-hooks","------- on_finalize,block number is {:?}",n);
+	// 	}
+	// 	fn on_initialize(n: BlockNumberFor<T>) -> Weight {
+	// 		log::info!(target: "use-hooks","+++++++ on_initialize,block number is {:?}",n);
+	// 		0
+	// 	}
+	// }
 
 	//8.调度函数,类似于合约函数，pallet整个流程可以类比为一个智能合约，而合约的调用最终要在链上执行
 	#[pallet::call]
@@ -200,26 +217,26 @@ pub mod pallet {
 		// 	Ok(().into())
 		// }
 
-		#[pallet::weight(0)]
-		pub fn set_student_info(
-			origin: OriginFor<T>,
-			student_number: T::StudentNumberType,
-			student_name: T::StudentNameType,
-		) -> DispatchResultWithPostInfo {
-			ensure_root(origin)?;
+		// #[pallet::weight(0)]
+		// pub fn set_student_info(
+		// 	origin: OriginFor<T>,
+		// 	student_number: T::StudentNumberType,
+		// 	student_name: T::StudentNameType,
+		// ) -> DispatchResultWithPostInfo {
+		// 	ensure_root(origin)?;
 
-			//先判断
-			if StudentInfo::<T>::contains_key(student_number) {
-				return Err(Error::<T>::StudentInfoSetDuplicate.into())
-			}
+		// 	//先判断
+		// 	if StudentInfo::<T>::contains_key(student_number) {
+		// 		return Err(Error::<T>::StudentInfoSetDuplicate.into());
+		// 	}
 
-			StudentInfo::<T>::insert(&student_number, &student_name);
+		// 	StudentInfo::<T>::insert(&student_number, &student_name);
 
-			//发出事件通知
-			Self::deposit_event(Event::StudentInfoSet(student_number, student_name));
+		// 	//发出事件通知
+		// 	Self::deposit_event(Event::StudentInfoSet(student_number, student_name));
 
-			Ok(().into())
-		}
+		// 	Ok(().into())
+		// }
 		// #[pallet::weight(0)]
 		// pub fn set_dorm_info(
 		// 	origin: OriginFor<T>,
@@ -241,5 +258,29 @@ pub mod pallet {
 
 		// 	Ok(().into())
 		// }
+
+		//这个调度函数
+		#[pallet::weight(0)]
+		pub fn my_function(origin: OriginFor<T>, value: u128) -> DispatchResultWithPostInfo {
+			ensure_signed(origin)?;
+
+			log::info!(target:"storage provider","my function!");
+
+			Self::deposit_event(Event::FunctionCallSuccess);
+
+			Ok(().into())
+		}
+	}
+}
+
+//给类型实现trait
+impl<T: Config> StorageInterface for Pallet<T> {
+	type Value = T::Value;
+	//在trait中实现函数而不是在当前pallet的调度模块中实现
+	fn get_param() -> Self::Value {
+		MyValue::<T>::get()
+	}
+	fn set_param(v: Self::Value) {
+		MyValue::<T>::put(v);
 	}
 }

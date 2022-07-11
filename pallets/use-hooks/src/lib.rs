@@ -6,8 +6,7 @@ pub use pallet::*; //导出，外部可以调用
 pub mod pallet {
 
 	//1.引入外部依赖，可以引入其它的依赖
-	use frame_support::pallet_prelude::*;
-	use frame_support::transactional;
+	use frame_support::{pallet_prelude::*, transactional};
 	use frame_system::pallet_prelude::*;
 
 	//2.声明pallet,可以理解为对象占位符号，固定写法
@@ -56,7 +55,7 @@ pub mod pallet {
 	//5.链上事件的通知
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)] //生成发出事件的函数
-											  //步骤三：操作执行成功后通知用户
+														 //步骤三：操作执行成功后通知用户
 	pub enum Event<T: Config> {
 		ClassSet(u32), //班级
 		//StudentInfoSet(u32, u128),  //学生信息
@@ -117,7 +116,7 @@ pub mod pallet {
 		#[transactional] //自动回滚
 		//每一个存储变量对应一个调度函数
 		#[pallet::weight(0)] //所有调度函数都需要，操作成本，权重可以动态变化根据条件
-				 //函数名称与存储名称在语义上保持统一，函数是对存储的操作，函数的结果使用Result枚举处理
+					 //函数名称与存储名称在语义上保持统一，函数是对存储的操作，函数的结果使用Result枚举处理
 		pub fn set_class_info(origin: OriginFor<T>, class: u32) -> DispatchResultWithPostInfo {
 			//1.判断条件: 签名、是否是root账户
 			ensure_root(origin)?; //只有root账户才能操作
@@ -132,7 +131,7 @@ pub mod pallet {
 			Class::<T>::put(class); //StorageValue 使用put方法存储值，其他方法可以去官方文档查看
 
 			if HasSetFlag::<T>::exists() {
-				return Err(Error::<T>::FlagExisted.into());
+				return Err(Error::<T>::FlagExisted.into())
 			}
 
 			HasSetFlag::<T>::put(Some(true));
@@ -155,7 +154,7 @@ pub mod pallet {
 			ensure_root(origin)?;
 
 			if param <= 100 {
-				return Err(Error::<T>::NumberTooSmallThan100.into());
+				return Err(Error::<T>::NumberTooSmallThan100.into())
 			}
 
 			Class::<T>::put(param);
