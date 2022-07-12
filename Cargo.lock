@@ -3796,6 +3796,7 @@ dependencies = [
  "pallet-call-function",
  "pallet-events-errors",
  "pallet-grandpa",
+ "pallet-provide-pallet",
  "pallet-randomness-collective-flip",
  "pallet-simple-pallet",
  "pallet-sudo",
@@ -3805,6 +3806,7 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-use-config",
  "pallet-use-hooks",
+ "pallet-use-pallet",
  "pallet-use-storage",
  "parity-scale-codec",
  "scale-info",
@@ -4084,6 +4086,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-provide-pallet"
+version = "0.0.1"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
 name = "pallet-randomness-collective-flip"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.25#3348e144f0a2b39ce08bd8e3b976c42fe0c990b9"
@@ -4243,6 +4260,22 @@ dependencies = [
  "frame-support",
  "frame-system",
  "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
+name = "pallet-use-pallet"
+version = "0.0.1"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-provide-pallet",
  "parity-scale-codec",
  "scale-info",
  "sp-core",

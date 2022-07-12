@@ -7,10 +7,11 @@ pub mod pallet {
 
 	//1.引入外部依赖，可以引入其它的依赖
 	use super::*;
-	use frame_support::dispatch::fmt::Debug;
-	use frame_support::dispatch::Codec;
-	use frame_support::pallet_prelude::*;
-	use frame_support::sp_runtime::traits::AtLeast32BitUnsigned;
+	use frame_support::{
+		dispatch::{fmt::Debug, Codec},
+		pallet_prelude::*,
+		sp_runtime::traits::AtLeast32BitUnsigned,
+	};
 	//use frame_support::transactional;
 	use frame_system::pallet_prelude::*;
 
@@ -74,8 +75,11 @@ pub mod pallet {
 	//步骤二：定义存储，有四种：Storage Value、 Storage Map、Storage Double Map、Storage N Map
 	//pub type Proofs<T: Config> = StorageMap<_, Blake2_128Concat, u32, u128>;
 	// //前面两项是默认，后面两项是k,v
-	//#[pallet::getter(fn my_class)] //getter函数，与字段同名，只返回字段中的值，可以把字段变为私有，然后通过api访问
-	//pub type Class<T: Config> = StorageValue<_, u32>; //存储名：Class，存储类型：StorageValue，只存一个值（任何类型），默认要实现约束Config
+	//#[pallet::getter(fn my_class)]
+	//#[pallet::getter(fn //getter函数，与字段同名，只返回字段中的值，可以把字段变为私有，
+	//#[pallet::getter(fn 然后通过api访问
+	//pub type Class<T: Config> = StorageValue<_, u32>;
+	// //存储名：Class，存储类型：StorageValue，只存一个值（任何类型），默认要实现约束Config
 
 	//#[pallet::storage]
 	//#[pallet::getter(fn set_flag)]
@@ -107,7 +111,7 @@ pub mod pallet {
 	//5.链上事件的通知
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)] //生成发出事件的函数
-											  //步骤三：操作执行成功后通知用户
+														 //步骤三：操作执行成功后通知用户
 	pub enum Event<T: Config> {
 		//ClassSet(u32), //班级
 		//StudentInfoSet(T::StudentNumberType, T::StudentNameType), //学生信息
@@ -262,10 +266,7 @@ pub mod pallet {
 		// }
 		//调用trait中的方法
 		#[pallet::weight(0)]
-		pub fn storage_value(
-			origin: OriginFor<T>,
-			value: T::Value,
-		) -> DispatchResultWithPostInfo {
+		pub fn storage_value(origin: OriginFor<T>, value: T::Value) -> DispatchResultWithPostInfo {
 			ensure_signed(origin)?;
 
 			//T代表当前pallet，

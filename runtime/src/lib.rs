@@ -30,9 +30,7 @@ pub use frame_support::{
 		ConstU128, ConstU32, ConstU64, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo,
 	},
 	weights::{
-		constants::{
-			BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND,
-		},
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		IdentityFee, Weight,
 	},
 	StorageValue,
@@ -144,6 +142,7 @@ parameter_types! {
 	pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
 		::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	pub const SS58Prefix: u8 = 42;
+	pub const MaxValueSize: u32 = 16 * 1024;
 }
 
 // Configure FRAME pallets to include in runtime.
@@ -300,6 +299,19 @@ impl pallet_use_config::Config for Runtime {
 	type StudentNameType = u128;
 }
 
+//实现pallet
+impl pallet_use_pallet::Config for Runtime {
+	type Event = Event;
+	type Value = u32;
+	type MyStorage = StorageProvider;
+}
+
+//实现pallet
+impl pallet_provide_pallet::Config for Runtime {
+	type Event = Event;
+	type Value = u32;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -323,6 +335,8 @@ construct_runtime!(
 		CallFunction:pallet_call_function,
 		UseHooks:pallet_use_hooks,
 		UseConfig:pallet_use_config,
+		StorageProvider:pallet_provide_pallet,
+		StorageUser:pallet_use_pallet,
 	}
 );
 

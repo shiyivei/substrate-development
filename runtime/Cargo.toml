@@ -57,6 +57,9 @@ pallet-events-errors = { version = "0.0.1", default-features = false,path = "../
 pallet-call-function = { version = "0.0.1", default-features = false,path = "../pallets/call-function"}
 pallet-use-hooks = { version = "0.0.1", default-features = false,path = "../pallets/use-hooks"}
 pallet-use-config = { version = "0.0.1", default-features = false,path = "../pallets/use-config"}
+pallet-use-pallet = { version = "0.0.1", default-features = false,path = "../pallets/use-pallet"}
+pallet-provide-pallet = { version = "0.0.1", default-features = false,path = "../pallets/provide-pallet"}
+
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.25" }
@@ -96,6 +99,9 @@ std = [
 	"pallet-call-function/std",
 	"pallet-use-hooks/std",
 	"pallet-use-config/std",
+	"pallet-provide-pallet/std",
+	"pallet-use-pallet/std",
+
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
