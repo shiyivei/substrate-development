@@ -311,6 +311,12 @@ impl pallet_provide_pallet::Config for Runtime {
 	type Event = Event;
 	type Value = u32;
 }
+// 实现pallet
+impl pallet_use_other_pallet::Config for Runtime {
+	type Event = Event;
+	type Value = u32;
+	type MyStorage = StorageProvider; //上一个pallet
+}
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -337,6 +343,7 @@ construct_runtime!(
 		UseConfig:pallet_use_config,
 		StorageProvider:pallet_provide_pallet,
 		StorageUser:pallet_use_pallet,
+		UseOtherPallet:pallet_use_other_pallet,
 	}
 );
 

@@ -3806,6 +3806,7 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-use-config",
  "pallet-use-hooks",
+ "pallet-use-other-pallet",
  "pallet-use-pallet",
  "pallet-use-storage",
  "parity-scale-codec",
@@ -4260,6 +4261,22 @@ dependencies = [
  "frame-support",
  "frame-system",
  "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
+name = "pallet-use-other-pallet"
+version = "0.0.1"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-provide-pallet",
  "parity-scale-codec",
  "scale-info",
  "sp-core",

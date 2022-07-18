@@ -59,6 +59,8 @@ pallet-use-hooks = { version = "0.0.1", default-features = false,path = "../pall
 pallet-use-config = { version = "0.0.1", default-features = false,path = "../pallets/use-config"}
 pallet-use-pallet = { version = "0.0.1", default-features = false,path = "../pallets/use-pallet"}
 pallet-provide-pallet = { version = "0.0.1", default-features = false,path = "../pallets/provide-pallet"}
+pallet-use-other-pallet = { version = "0.0.1", default-features = false,path = "../pallets/use-other-pallet"}
+
 
 
 [build-dependencies]
@@ -101,6 +103,8 @@ std = [
 	"pallet-use-config/std",
 	"pallet-provide-pallet/std",
 	"pallet-use-pallet/std",
+	"pallet-use-other-pallet/std",
+	
 
 ]
 runtime-benchmarks = [
